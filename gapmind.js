@@ -109,7 +109,11 @@ d3.json("nations.json", function(nations) {
       .style("fill", function(d) { return colorScale(color(d)); })
       .attr("countryName", function(d) { return d.name;})
       .call(position)
-      .sort(order);
+      .sort(order)
+      .on('mouseover', function(d) {
+          console.log(d);
+          info_label.text(d.name);
+      })
 
   // Add a title.
   dot.append("title")
@@ -235,7 +239,7 @@ d3.json("nations.json", function(nations) {
       var capturedTargetIdx = 
 	  getTargetCapturedByBubbleCursor(d3.mouse(this),dot[0]);
      var selectedName = d3.select(dot[0][capturedTargetIdx]).attr('countryName');
-     info_label.text(selectedName);
+     //info_label.text(selectedName);
 	  
       // Update the fillcolor of the targetcircles
       //updateTargetsFill(capturedTargetIdx,clickTarget);
