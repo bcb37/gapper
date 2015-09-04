@@ -71,6 +71,7 @@ svg.append("text")
     .attr("transform", "rotate(-90)")
     .text("life expectancy (years)");
 
+var mouseOn;
 
 var info_label = svg.append("text")
     .attr("class", "country_label")
@@ -111,8 +112,11 @@ d3.json("nations.json", function(nations) {
       .call(position)
       .sort(order)
       .on('mouseover', function(d) {
-          console.log(d);
           info_label.text(d.name);
+          mouseOn = d.name;
+      })
+      .on('mouseout', function(d) {
+          mouseOn = undefined;
       })
 
   // Add a title.
@@ -239,7 +243,8 @@ d3.json("nations.json", function(nations) {
       var capturedTargetIdx = 
 	  getTargetCapturedByBubbleCursor(d3.mouse(this),dot[0]);
      var selectedName = d3.select(dot[0][capturedTargetIdx]).attr('countryName');
-     //info_label.text(selectedName);
+     if (typeof mouseOn === "undefined")
+        info_label.text(selectedName);
 	  
       // Update the fillcolor of the targetcircles
       //updateTargetsFill(capturedTargetIdx,clickTarget);
