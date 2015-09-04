@@ -73,9 +73,9 @@ svg.append("text")
 
 
 var info_label = svg.append("text")
-    .attr("y", height - 24)
-    .attr("x", 0)
-    .text("foo");
+    .attr("class", "country_label")
+    .attr("y", 0)
+    .attr("x", 30);
 
 // Add the year label; the value is set on transition.
 var label = svg.append("text")
@@ -85,11 +85,19 @@ var label = svg.append("text")
     .attr("x", width)
     .text(1800);
 
+var cells = svg.append("svg:g")
+    .attr("id", "cells");
+
+d3.select("input[type=checkbox]").on("change", function() {
+  cells.classed("voronoi", this.checked);
+});
+
 // Load the data.
 d3.json("nations.json", function(nations) {
 
   // A bisector since many nation's data is sparsely-defined.
   var bisect = d3.bisector(function(d) { return d[0]; });
+ 
 
   // Add a dot per nation. Initialize the data at 1800, and set the colors.
   var dot = svg.append("g")
@@ -131,6 +139,7 @@ d3.json("nations.json", function(nations) {
         .attr("cy", function(d) { return yScale(y(d)); })
         .attr("r", function(d) { return radiusScale(radius(d)); });
   }
+  
 
   // Defines a sort order so that the smallest dots are drawn on top.
   function order(a, b) {
@@ -203,11 +212,28 @@ d3.json("nations.json", function(nations) {
     }
     return a[1];
   }
+
+//importing the append for voronoi cells might work, or be a start...
+  var vertices = [];
+  dot[0].forEach(function(d,i) {vertices[i] = [d3.select(d).attr('cx'), d3.select(d).attr('cy')]});
+  var polygons = d3.geom.voronoi(vertices);
+    var g = cells.selectAll("g")
+      .data(interpolateData(1800))
+      .enter().append("svg:g");
+
+    g.append("svg:path")
+        .attr("class", "cell")
+        .attr("d", function(d, i) { return "M" + polygons[i].join("L") + "Z"; });
+
   //Handle mousemove events
   svg.on("mousemove", function() {
+     dot[0].forEach(function(d,i) {vertices[i] = [d3.select(d).attr('cx'), d3.select(d).attr('cy')]});
+     var polygons = d3.geom.voronoi(vertices);
+     d3.selectAll(".cell")
+        .attr("d", function(d, i) { return "M" + polygons[i].join("L") + "Z"; });
+
       var capturedTargetIdx = 
 	  getTargetCapturedByBubbleCursor(d3.mouse(this),dot[0]);
-     //info_label.text(d3.mouse(this)[1]);
      var selectedName = d3.select(dot[0][capturedTargetIdx]).attr('countryName');
      info_label.text(selectedName);
 	  
@@ -268,6 +294,5 @@ d3.json("nations.json", function(nations) {
 	      .attr("r",0);
       }
 
-      //info_label.text("baz");
       return currMinIdx;
   }
