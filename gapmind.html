@@ -5,12 +5,12 @@
 <title>The Wealth & Health of Nations</title>
 <style>
 
-@import url(../style.css?aea6f0a);
 
 #chart {
   margin-left: -40px;
   height: 506px;
 }
+
 
 text {
   font: 10px sans-serif;
@@ -49,10 +49,28 @@ text {
   cursor: ew-resize;
 }
 
+.country_label {
+   font: 25px sans-serif;
+   fill: #aa6644;
+}
+
+path.cell {
+  fill: none;
+  pointer-events: all;
+}
+
+#cells.voronoi path.cell {
+  stroke: brown;
+}
+
+
 </style>
 
 <h1>The Wealth & Health of Nations</h1>
 
+    <div id="ta_selector">
+      <input type="checkbox" id="target_acquisition_method"> <label for="TargetAcquisition">Show Voronoi Tessellation</label>
+    </div>
 <p id="chart"></p>
 
 <aside>Mouseover the year to move forward and backwards through time.</aside>
