@@ -1,5 +1,3 @@
-
-
 // Various accessors that specify the four dimensions of data to visualize.
 function x(d) { return d.income; }
 function y(d) { return d.lifeExpectancy; }
@@ -8,10 +6,11 @@ function color(d) { return d.region; }
 function key(d) { return d.name; }
 
 
-  function distance(ptA,ptB) {
-      var diff = [ptB[0]-ptA[0],ptB[1]-ptA[1]];
-      return Math.sqrt(diff[0]*diff[0] + diff[1]*diff[1]);
-  }
+// Distance funciton from the Bubble Cursor example: http://bl.ocks.org/magrawala/9716298
+function distance(ptA,ptB) {
+    var diff = [ptB[0]-ptA[0],ptB[1]-ptA[1]];
+    return Math.sqrt(diff[0]*diff[0] + diff[1]*diff[1]);
+}
 
 // Chart dimensions.
 var margin = {top: 19.5, right: 19.5, bottom: 19.5, left: 39.5},
@@ -35,12 +34,12 @@ var svg = d3.select("#chart").append("svg:svg")
   .append("g")
     .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
-  // Make a white background rectangle
-  svg.append("rect")
-     .attr("class","backgroundRect")
+// Make a white background rectangle
+svg.append("rect")
+    .attr("class","backgroundRect")
     .attr("width", width + margin.left + margin.right)
     .attr("height", height + margin.top + margin.bottom)
-     .attr("fill","white");
+    .attr("fill","white");
 
 // Add the x-axis.
 svg.append("g")
@@ -73,6 +72,7 @@ svg.append("text")
 
 var mouseOn;
 
+// Add the label for the counrty name.
 var info_label = svg.append("text")
     .attr("class", "country_label")
     .attr("y", 0)
@@ -89,6 +89,7 @@ var label = svg.append("text")
 var cells = svg.append("svg:g")
     .attr("id", "cells");
 
+// From http://mbostock.github.io/d3/talk/20111116/airports.html
 d3.select("input[type=checkbox]").on("change", function() {
   cells.classed("voronoi", this.checked);
 });
@@ -221,9 +222,10 @@ d3.json("nations.json", function(nations) {
     return a[1];
   }
 
-//importing the append for voronoi cells might work, or be a start...
+// Modified  from http://mbostock.github.io/d3/talk/20111116/airports.html
   var vertices = [];
   dot[0].forEach(function(d,i) {vertices[i] = [d3.select(d).attr('cx'), d3.select(d).attr('cy')]});
+  // Calculate voronoi polygons for the initial year.
   var polygons = d3.geom.voronoi(vertices);
     var g = cells.selectAll("g")
       .data(interpolateData(1800))
@@ -240,68 +242,67 @@ d3.json("nations.json", function(nations) {
      d3.selectAll(".cell")
         .attr("d", function(d, i) { return "M" + polygons[i].join("L") + "Z"; });
 
-      var capturedTargetIdx = 
-	  getTargetCapturedByBubbleCursor(d3.mouse(this),dot[0]);
+     // Modified from Bubble cursor example: http://bl.ocks.org/magrawala/9716298
+     var capturedTargetIdx = getTargetCapturedByBubbleCursor(d3.mouse(this),dot[0]);
      var selectedName = d3.select(dot[0][capturedTargetIdx]).attr('countryName');
+
      if (typeof mouseOn === "undefined")
         info_label.text(selectedName);
-	  
+      
       // Update the fillcolor of the targetcircles
       //updateTargetsFill(capturedTargetIdx,clickTarget);
   });
 });
 
-  function getTargetCapturedByBubbleCursor(mouse,targets) {
-       //Compute distances from mouse to center, outermost, innermost
-       //of each target and find currMinIdx and secondMinIdx;
-      var mousePt = [mouse[0],mouse[1]];
-      var dists=[], containDists=[], intersectDists=[];
-      var currMinIdx = 0;
-      for (var idx =0; idx < targets.length; idx++) {
-	  //var targetPt = targets[idx][0];I
-          var targetPt = [d3.select(targets[idx]).attr('cx'), d3.select(targets[idx]).attr('cy')];
-	  var currDist = distance(mousePt,targetPt);
-	  dists.push(currDist);
+// To the End - Modified from Bubble cursor example: http://bl.ocks.org/magrawala/9716298
+function getTargetCapturedByBubbleCursor(mouse,targets) {
+     //Compute distances from mouse to center, outermost, innermost
+     //of each target and find currMinIdx and secondMinIdx;
+    var mousePt = [mouse[0],mouse[1]];
+    var dists=[], containDists=[], intersectDists=[];
+    var currMinIdx = 0;
+    for (var idx =0; idx < targets.length; idx++) {
+        var targetPt = [d3.select(targets[idx]).attr('cx'), d3.select(targets[idx]).attr('cy')];
+        var currDist = distance(mousePt,targetPt);
+        dists.push(currDist);
 
-	  targetRadius =  d3.select(targets[idx]).attr('r')
-	  //targetRadius = targets[idx][1];
-	  containDists.push(currDist+targetRadius);
-	  intersectDists.push(currDist-targetRadius);
+        targetRadius =  d3.select(targets[idx]).attr('r')
+        containDists.push(currDist+targetRadius);
+        intersectDists.push(currDist-targetRadius);
 
-	  
-	  if(intersectDists[idx] < intersectDists[currMinIdx]) {
-	      currMinIdx = idx;
-	      
-	  } 
-      }
+        if(intersectDists[idx] < intersectDists[currMinIdx]) {
+            currMinIdx = idx;
+              
+        } 
+    }
       
-      // Find secondMinIdx
-      var secondMinIdx = (currMinIdx+1)%targets.length;
-      for (var idx =0; idx < targets.length; idx++) {
-	  if (idx != currMinIdx && 
-	      intersectDists[idx] < intersectDists[secondMinIdx]) {
-	      secondMinIdx = idx;
-	  }
+    // Find secondMinIdx
+    var secondMinIdx = (currMinIdx+1)%targets.length;
+    for (var idx =0; idx < targets.length; idx++) {
+      if (idx != currMinIdx && 
+          intersectDists[idx] < intersectDists[secondMinIdx]) {
+          secondMinIdx = idx;
       }
+    }
 
-      var cursorRadius = Math.min(containDists[currMinIdx],
-			       intersectDists[secondMinIdx]);
-      svg.select(".cursorCircle")
-	  .attr("cx",mouse[0])
-	  .attr("cy",mouse[1])
-	  .attr("r",cursorRadius);
+    var cursorRadius = Math.min(containDists[currMinIdx], intersectDists[secondMinIdx]);
 
-      if(cursorRadius < containDists[currMinIdx]) {
-	  svg.select(".cursorMorphCircle")
-	      .attr("cx",targets[currMinIdx][0][0])
-	      .attr("cy",targets[currMinIdx][0][1])
-	      .attr("r",targets[currMinIdx][1]+5);
-      } else {
-	  svg.select(".cursorMorphCircle")
-	      .attr("cx",0)
-	      .attr("cy",0)
-	      .attr("r",0);
-      }
+    svg.select(".cursorCircle")
+        .attr("cx",mouse[0])
+        .attr("cy",mouse[1])
+        .attr("r",cursorRadius);
 
-      return currMinIdx;
-  }
+    if(cursorRadius < containDists[currMinIdx]) {
+      svg.select(".cursorMorphCircle")
+          .attr("cx",targets[currMinIdx][0][0])
+          .attr("cy",targets[currMinIdx][0][1])
+          .attr("r",targets[currMinIdx][1]+5);
+    } else {
+      svg.select(".cursorMorphCircle")
+          .attr("cx",0)
+          .attr("cy",0)
+          .attr("r",0);
+    }
+
+    return currMinIdx;
+}
