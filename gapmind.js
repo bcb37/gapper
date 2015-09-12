@@ -115,9 +115,11 @@ d3.json("nations.json", function(nations) {
       .on('mouseover', function(d) {
           info_label.text(d.name);
           mouseOn = d.name;
+          highlight(this);
       })
       .on('mouseout', function(d) {
           mouseOn = undefined;
+          unhighlight();
       })
 
   // Add a title.
@@ -245,17 +247,27 @@ d3.json("nations.json", function(nations) {
      // Modified from Bubble cursor example: http://bl.ocks.org/magrawala/9716298
      var capturedTargetIdx = getTargetCapturedByBubbleCursor(d3.mouse(this),dot[0]);
      var selectedName = d3.select(dot[0][capturedTargetIdx]).attr('countryName');
-     // Dim all but the captured target
-     svg.selectAll(".dot") .attr("opacity",.7);
-     d3.select(dot[0][capturedTargetIdx]) .attr('opacity', 1);
+
 
      //updateOpacity(capturedTargetIdx,dot[0]);
-     if (typeof mouseOn === "undefined")
+     if (typeof mouseOn === "undefined") {
         info_label.text(selectedName);
+        highlight(dot[0][capturedTargetIdx]);
+     }
       
       // Update the fillcolor of the targetcircles
       //updateTargetsFill(capturedTargetIdx,clickTarget);
   });
+  function highlight(node) {
+     // Dim all but the captured target
+     console.log('highlight',node);
+     svg.selectAll(".dot") .attr("opacity",.7);
+     d3.select(node) .attr('opacity', 1);
+  }
+  function unhighlight() {
+    console.log('unhighlight');
+     svg.selectAll(".dot") .attr("opacity",1);
+  }
 });
 
 //function updateOpacity(capturedTargetIdx, allDots) {
