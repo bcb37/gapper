@@ -245,7 +245,11 @@ d3.json("nations.json", function(nations) {
      // Modified from Bubble cursor example: http://bl.ocks.org/magrawala/9716298
      var capturedTargetIdx = getTargetCapturedByBubbleCursor(d3.mouse(this),dot[0]);
      var selectedName = d3.select(dot[0][capturedTargetIdx]).attr('countryName');
+     // Dim all but the captured target
+     svg.selectAll(".dot") .attr("opacity",.7);
+     d3.select(dot[0][capturedTargetIdx]) .attr('opacity', 1);
 
+     //updateOpacity(capturedTargetIdx,dot[0]);
      if (typeof mouseOn === "undefined")
         info_label.text(selectedName);
       
@@ -253,6 +257,12 @@ d3.json("nations.json", function(nations) {
       //updateTargetsFill(capturedTargetIdx,clickTarget);
   });
 });
+
+//function updateOpacity(capturedTargetIdx, allDots) {
+     //allDots.each
+     //svg.selectAll(".dot")
+        //.attr("opacity", function(d,i) { if (i === capturedTargetIdx) { return 1 } return .5});
+//}
 
 // To the End - Modified from Bubble cursor example: http://bl.ocks.org/magrawala/9716298
 function getTargetCapturedByBubbleCursor(mouse,targets) {
@@ -294,14 +304,14 @@ function getTargetCapturedByBubbleCursor(mouse,targets) {
 
     if(cursorRadius < containDists[currMinIdx]) {
       svg.select(".cursorMorphCircle")
-          .attr("cx",targets[currMinIdx][0][0])
-          .attr("cy",targets[currMinIdx][0][1])
+          //.attr("cx",targets[currMinIdx][0][0])
+          //.attr("cy",targets[currMinIdx][0][1])
           .attr("r",targets[currMinIdx][1]+5);
     } else {
-      svg.select(".cursorMorphCircle")
-          .attr("cx",0)
-          .attr("cy",0)
-          .attr("r",0);
+      //svg.select(".cursorMorphCircle")
+          //.attr("cx",0)
+          //.attr("cy",0)
+          //.attr("r",0);
     }
 
     return currMinIdx;
