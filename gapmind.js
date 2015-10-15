@@ -31,10 +31,9 @@ var xAxis = d3.svg.axis().orient("bottom").scale(xScale).ticks(12, d3.format(",d
 var svg = d3.select("#chart").append("svg:svg")
     .attr("width", width + margin.left + margin.right)
     .attr("height", height + margin.top + margin.bottom)
-    .attr("xmlns","http://www.w3.org/2000/svg") 
-    .attr("version","1.1");
+  .append("g")
+    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
-    
 var defs = svg.append("defs");
 
 var filter = defs.append("filter")
@@ -51,8 +50,6 @@ femerge.append("feMergeNode")
 femerge.append("feMergeNode")
    .attr("in", "SourceGraphic")
 
-svg.append("g")
-    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 // Make a white background rectangle
 svg.append("rect")
     .attr("class","backgroundRect")
@@ -280,14 +277,15 @@ d3.json("nations.json", function(nations) {
   function highlight(node) {
      // Dim all but the captured target
      console.log('highlight',node);
-     svg.selectAll(".dot") .attr("opacity",.7);
+     svg.selectAll(".dot") .attr("opacity",.4);
      svg.selectAll(".dot") .attr("filter",null);
-     d3.select(node) .attr('opacity', 1);
-     d3.select(node) .attr('filter', "url(#glow)");
+     //d3.select(node) .attr('filter', "url(#glow)");
+     d3.select(node) .attr('opacity', 2);
   }
   function unhighlight() {
     console.log('unhighlight');
      svg.selectAll(".dot") .attr("opacity",1);
+     svg.selectAll(".dot") .attr("filter",null);
   }
 });
 
