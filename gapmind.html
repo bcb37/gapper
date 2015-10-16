@@ -76,8 +76,15 @@ path.cell {
 
 <h1>The Wealth & Health of Nations</h1>
 
-    <div id="ta_selector">
+    <div id="voronoi_checkbox">
       <input type="checkbox" id="target_acquisition_method"> <label for="TargetAcquisition">Show Voronoi Tessellation</label>
+    </div>
+    <div>
+    Select Target Acquisition Method
+    <select id="ta_selector">
+       <option value="BubbleCursor">Bubble Cursor</option>
+       <option value="voronoi">Voronoi Tesselation</option>
+    </select>
     </div>
 <p id="chart"></p>
 
