@@ -12,7 +12,7 @@ function distance(ptA,ptB) {
     return Math.sqrt(diff[0]*diff[0] + diff[1]*diff[1]);
 }
 
-d3.selection.prototype.moveToFront = function() { return this.each(function() { this.parentNode.appendChild(this); }); };
+//d3.selection.prototype.moveToFront = function() { return this.each(function() { this.parentNode.appendChild(this); }); };
 
 // Chart dimensions.
 var margin = {top: 19.5, right: 19.5, bottom: 19.5, left: 39.5},
@@ -104,46 +104,33 @@ var label = svg.append("text")
     .attr("x", width)
     .text(1800);
 
-var cells = svg.append("svg:g")
-    .attr("id", "cells");
 
 // From http://mbostock.github.io/d3/talk/20111116/airports.html
 d3.select("input[type=checkbox]").on("change", function() {
   cells.classed("voronoi", this.checked);
 });
 
-var ta_method = "BubbleCursor";
+var dots = svg.append("svg:g")
+    .attr("class", "dots");
+
+var cells = svg.append("svg:g")
+    .attr("id", "cells");
+
+var ta_method = "voronoi";
 load_data();
 var ta_select = d3.select("#ta_selector").on("change", ta_change);
 function ta_change() {
     ta_method = ta_select.property('value');
-    load_data();
 }
-
 // Load the data.
 function load_data() {
 d3.json("nations.json", function(nations) {
 
   // A bisector since many nation's data is sparsely-defined.
   var bisect = d3.bisector(function(d) { return d[0]; });
- 
-   d3.select(".dots").remove();
   // Add a dot per nation. Initialize the data at 1800, and set the colors.
-  if (ta_method === "voronoi") {
-  var dot = svg.append("g")
-      .attr("class", "dots")
-    .selectAll(".dot")
-      .data(interpolateData(1800))
-    .enter().append("circle")
-      .attr("class", "dot")
-      .style("fill", function(d) { return colorScale(color(d)); })
-      .attr("countryName", function(d) { return d.name;})
-      .call(position)
-      .sort(order);
-
-  } else {
-  var dot = svg.append("g")
-      .attr("class", "dots")
+  //var dot = svg.append("g")
+  var dg = d3.select(".dots")
     .selectAll(".dot")
       .data(interpolateData(1800))
     .enter().append("circle")
@@ -161,9 +148,9 @@ d3.json("nations.json", function(nations) {
           mouseOn = undefined;
           unhighlight();
       })
-    }
   // Add a title.
-  dot.append("title")
+  //dot.append("title")
+  dg.append("title")
       .text(function(d) { return d.name; });
 
   // Add an overlay for the year label.
@@ -235,7 +222,7 @@ d3.json("nations.json", function(nations) {
 
   // Updates the display to show the specified year.
   function displayYear(year) {
-    dot.data(interpolateData(year), key).call(position).sort(order);
+    dg.data(interpolateData(year), key).call(position).sort(order);
     label.text(Math.round(year));
   }
 
@@ -266,7 +253,7 @@ d3.json("nations.json", function(nations) {
 
 // Modified from http://mbostock.github.io/d3/talk/20111116/airports.html
   var vertices = [];
-  dot[0].forEach(function(d,i) {vertices[i] = [d3.select(d).attr('cx'), d3.select(d).attr('cy')]});
+  dg[0].forEach(function(d,i) {vertices[i] = [d3.select(d).attr('cx'), d3.select(d).attr('cy')]});
   // Calculate voronoi polygons for the initial year.
   var polygons = d3.geom.voronoi(vertices);
 
@@ -294,17 +281,16 @@ d3.json("nations.json", function(nations) {
 
   //Handle mousemove events
   svg.on("mousemove", function() {
-     dot[0].forEach(function(d,i) {vertices[i] = [d3.select(d).attr('cx'), d3.select(d).attr('cy')]});
+     dg[0].forEach(function(d,i) {vertices[i] = [d3.select(d).attr('cx'), d3.select(d).attr('cy')]});
      var polygons = d3.geom.voronoi(vertices);
 
      if (ta_method === "voronoi") {
         d3.selectAll(".cell")
            .attr("d", function(d, i) { return "M" + polygons[i].join("L") + "Z"; })
 	   .sort(order)
-           .moveToFront()
            .on("mouseover", function(d, i) { 
                info_label.text(d.name); 
-               highlight(dot[0][i]); 
+               highlight(dg[0][i]); 
              })
            .on('mouseout', function(d) {
                unhighlight();
@@ -318,26 +304,26 @@ d3.json("nations.json", function(nations) {
  
      if (ta_method === "BubbleCursor") {
         // Modified from Bubble cursor example: http://bl.ocks.org/magrawala/9716298
-        capturedTargetIdx = getTargetCapturedByBubbleCursor(d3.mouse(this),dot[0]);
-        var selectedName = d3.select(dot[0][capturedTargetIdx]).attr('countryName');
+        capturedTargetIdx = getTargetCapturedByBubbleCursor(d3.mouse(this),dg[0]);
+        var selectedName = d3.select(dg[0][capturedTargetIdx]).attr('countryName');
    
         if (typeof mouseOn === "undefined") {
            info_label.text(selectedName);
-           highlight(dot[0][capturedTargetIdx]);
+           highlight(dg[0][capturedTargetIdx]);
         }
      }
       
   });
   function highlight(node) {
      // Dim all but the captured target
-     console.log('highlight',node);
+     //console.log('highlight',node);
      svg.selectAll(".dot") .attr("opacity",.4);
      svg.selectAll(".dot") .attr("filter",null);
      d3.select(node) .attr('filter', "url(#glow)");
      d3.select(node) .attr('opacity', 2);
   }
   function unhighlight() {
-    console.log('unhighlight');
+    //console.log('unhighlight');
      svg.selectAll(".dot") .attr("opacity",1);
      svg.selectAll(".dot") .attr("filter",null);
   }
