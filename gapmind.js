@@ -116,14 +116,12 @@ var dots = svg.append("svg:g")
 var cells = svg.append("svg:g")
     .attr("id", "cells");
 
-var ta_method = "voronoi";
-load_data();
+var ta_method = "BubbleCursor";
 var ta_select = d3.select("#ta_selector").on("change", ta_change);
 function ta_change() {
     ta_method = ta_select.property('value');
 }
 // Load the data.
-function load_data() {
 d3.json("nations.json", function(nations) {
 
   // A bisector since many nation's data is sparsely-defined.
@@ -259,8 +257,11 @@ d3.json("nations.json", function(nations) {
 
   var g = cells.selectAll("g")
       .data(interpolateData(1800))
-    .enter().append("svg:g");
-
+      .enter().append("svg:path")
+         .attr("class", "cell")
+         .attr("id", function(d,i) {return d.name})
+         .attr("d", function(d, i) { return "M" + polygons[i].join("L") + "Z"; });
+/*
   if (ta_method === "voronoi") {
      g.append("svg:path")
          .attr("class", "cell")
@@ -268,17 +269,18 @@ d3.json("nations.json", function(nations) {
 	 .sort(order)
          .on("mouseover", function(d, i) { 
                info_label.text(d.name); 
-               highlight(this); 
              })
          .on('mouseout', function(d) {
              unhighlight();
          });
   } else {
+     console.log("nv");
      g.append("svg:path")
          .attr("class", "cell")
+         .attr("id", function(d,i) {return d.name})
          .attr("d", function(d, i) { return "M" + polygons[i].join("L") + "Z"; });
   }
-
+*/
   //Handle mousemove events
   svg.on("mousemove", function() {
      dg[0].forEach(function(d,i) {vertices[i] = [d3.select(d).attr('cx'), d3.select(d).attr('cy')]});
@@ -291,6 +293,9 @@ d3.json("nations.json", function(nations) {
            .on("mouseover", function(d, i) { 
                info_label.text(d.name); 
                highlight(dg[0][i]); 
+               //highlight(this);
+		console.log("mouseover");
+                
              })
            .on('mouseout', function(d) {
                unhighlight();
@@ -303,6 +308,7 @@ d3.json("nations.json", function(nations) {
      
  
      if (ta_method === "BubbleCursor") {
+console.log("bubble");
         // Modified from Bubble cursor example: http://bl.ocks.org/magrawala/9716298
         capturedTargetIdx = getTargetCapturedByBubbleCursor(d3.mouse(this),dg[0]);
         var selectedName = d3.select(dg[0][capturedTargetIdx]).attr('countryName');
@@ -328,7 +334,6 @@ d3.json("nations.json", function(nations) {
      svg.selectAll(".dot") .attr("filter",null);
   }
 });
-}
 
 // To the End - Modified from Bubble cursor example: http://bl.ocks.org/magrawala/9716298
 function getTargetCapturedByBubbleCursor(mouse,targets) {
