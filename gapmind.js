@@ -5,7 +5,6 @@ function radius(d) { return d.population; }
 function color(d) { return d.region; }
 function key(d) { return d.name; }
 
-
 // Distance funciton from the Bubble Cursor example: http://bl.ocks.org/magrawala/9716298
 function distance(ptA,ptB) {
     var diff = [ptB[0]-ptA[0],ptB[1]-ptA[1]];
@@ -33,6 +32,7 @@ var svg = d3.select("#chart").append("svg:svg")
     .attr("height", height + margin.top + margin.bottom)
   .append("g")
     .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
 
 var defs = svg.append("defs");
 
@@ -88,12 +88,6 @@ svg.append("text")
 
 var mouseOn;
 
-// Add the label for the counrty name.
-var info_label = svg.append("text")
-    .attr("class", "country_label")
-    .attr("y", 0)
-    .attr("x", 30);
-
 // Add the year label; the value is set on transition.
 var label = svg.append("text")
     .attr("class", "year label")
@@ -101,6 +95,24 @@ var label = svg.append("text")
     .attr("y", height - 24)
     .attr("x", width)
     .text(1800);
+
+// Add in the cursor circle at 0,0 with 0 radius
+  // We add it first so that it appears behind the targets
+  svg.append("circle")
+    .attr("class","cursorCircle")
+    .attr("cx",0)
+    .attr("cy",0)
+    .attr("r",0)
+    .attr("fill","lightgray");
+
+  // Add in cursorMorph circle  at 0,0 with 0 radius
+  // We add it first so that it appears behind the targets
+  svg.append("circle")
+    .attr("class","cursorMorphCircle")
+    .attr("cx",0)
+    .attr("cy",0)
+    .attr("r",0)
+    .attr("fill","lightgray");
 
 var dots = svg.append("svg:g")
     .attr("class", "dots");
@@ -113,9 +125,11 @@ cells = svg.append("svg:g")
 var target_acquisition_method = "voronoi";
 
 // From http://mbostock.github.io/d3/talk/20111116/airports.html
-var voronoi_checkbox = d3.select("input[type=checkbox]").on("change", function() {
+var voronoi_checkbox = d3.select("input[type=checkbox]").on("change", show_acquisition_on_chart);
+
+function show_acquisition_on_chart() {
       cells.classed("voronoi", this.checked);
-});
+}
 
 // Load the data.
 d3.json("nations.json", function(nations) {
@@ -129,11 +143,10 @@ d3.json("nations.json", function(nations) {
     .enter().append("circle")
       .attr("class", "dot")
       .style("fill", function(d) { return colorScale(color(d)); })
-      .attr("countryName", function(d) { return d.name;})
       .call(position)
       .sort(order)
-      .on('mouseover', function(d) {
-          info_label.text(d.name);
+      .on('mouseover', function(d,i) {
+	  create_info_text(i);
           mouseOn = d.name;
           highlight(this);
       })
@@ -142,9 +155,6 @@ d3.json("nations.json", function(nations) {
           unhighlight();
       });
 
-  // Add a title.
-  dots.append("title")
-      .text(function(d) { return d.name; });
 
   // Add an overlay for the year label.
   var box = label.node().getBBox();
@@ -160,18 +170,23 @@ d3.json("nations.json", function(nations) {
       .tween("year", tweenYear)
       .each("end", enableInteraction);
 
-  // Positions the dots based on data.
 
   var polygons = make_polygons();
   
   make_cells();
 
-  var target_acquisition_select = d3.select("#target_acquisition_selector").on("change", target_acquisition_change);
+   d3.selectAll('input[name="tas"]').on("change", target_acquisition_change);
 
+  // Positions the dots based on data.
   function position(dot) {
     dot.attr("cx", function(d) { return xScale(x(d)); })
         .attr("cy", function(d) { return yScale(y(d)); })
-        .attr("r", function(d) { return radiusScale(radius(d)); });
+        .attr("r", function(d) { return radiusScale(radius(d)); })
+        .attr("countryName", function(d) { return d.name;})
+        .attr("population", function(d) { return d.population;})
+        .attr("lifeExpectancy", function(d) { return d.lifeExpectancy;})
+        .attr("income", function(d) { return d.income;})
+        .attr("region", function(d) { return d.region;});
   }
   
 
@@ -267,13 +282,13 @@ d3.json("nations.json", function(nations) {
    }
 
    svg.on("mousemove", function() {
-     if (target_acquisition_method !== "voronoi") {
+     if (target_acquisition_method === "bubbleCursor") {
         // Modified from Bubble cursor example: http://bl.ocks.org/magrawala/9716298
            capturedTargetIdx = getTargetCapturedByBubbleCursor(d3.mouse(this),dots[0]);
-           var selectedName = d3.select(dots[0][capturedTargetIdx]).attr('countryName');
+           var selectedNode = d3.select(dots[0][capturedTargetIdx]);
       
            if (typeof mouseOn === "undefined") {
-              info_label.text(selectedName);
+              create_info_text(capturedTargetIdx);
               highlight(dots[0][capturedTargetIdx]);
            }
       
@@ -292,7 +307,7 @@ d3.json("nations.json", function(nations) {
               .attr("id", function(d,i) {return d.name})
               .attr("d", function(d, i) { return "M" + polygons[i].join("L") + "Z"; })
               .on("mouseover", function(d, i) { 
-                    info_label.text(d.name);
+                    create_info_text(i);
                     highlight(dots[0][i]); 
                   })
                .on('mouseout', function(d) {
@@ -302,23 +317,55 @@ d3.json("nations.json", function(nations) {
   }
 
    function target_acquisition_change() {
-      target_acquisition_method = target_acquisition_select.property('value');
+      target_acquisition_method = d3.selectAll('input[name="tas"]:checked').node().value;
       if (target_acquisition_method === "voronoi") {
           cells = svg.append("svg:g")
               .attr("id", "cells");
           make_cells();
           redo_voronoi();
           d3.select("#voronoi_checkbox").attr("class", null);
+          d3.select("#bubbleCursor_checkbox").attr("class", "hidden");
           overlay.remove();
           add_overlay();
       } else {
           cells.remove();
+          d3.select("#bubbleCursor_checkbox").attr("class", null);
           d3.select("#voronoi_checkbox").attr("class", "hidden");
-          console.log("nv");
       }
     }
 
 });
+   svg.on("mouseout", function() {
+     if (target_acquisition_method === "bubbleCursor") {
+        unhighlight(); 
+
+        svg.select(".cursorCircle")
+	    	  .attr("cx",0)
+	  	  .attr("cy",0)
+	  	  .attr("r",0);
+
+        svg.select(".cursorMorphCircle")
+		  .attr("cx",0)
+	  	  .attr("cy",0)
+	  	  .attr("r",0);
+      }
+    });
+
+function create_info_text(node){
+    country = d3.select(dots[0][node]);
+
+    country_name_elem = d3.select("#country_name");
+    pci_elem = d3.select("#pci");
+    population_elem = d3.select("#population");
+    life_expectancy_elem = d3.select("#life_expectancy");
+    continent_color = country.style('fill');
+    country_name_elem.attr('style', "background-color:"+continent_color);
+
+    country_name_elem.text(country.attr('countryName'));
+    pci_elem.text(" Income Per Capita: " + numeral(Number(country.attr('income'))).format('$0,0.00'));
+    population_elem.text(" Population: " + numeral(Number(country.attr('population'))).format('0,0'));
+    life_expectancy_elem.text(" Life Expectancy: " + numeral(Number(country.attr('lifeExpectancy'))).format('0,0.00'));
+}
 
 function highlight(node) {
      // Dim all but the captured target
@@ -358,7 +405,7 @@ function getTargetCapturedByBubbleCursor(mouse,targets) {
         dists.push(currDist);
 
         targetRadius =  d3.select(targets[idx]).attr('r')
-        containDists.push(currDist+targetRadius);
+        containDists.push(currDist+Number(targetRadius));
         intersectDists.push(currDist-targetRadius);
 
         if(intersectDists[idx] < intersectDists[currMinIdx]) {
@@ -377,6 +424,7 @@ function getTargetCapturedByBubbleCursor(mouse,targets) {
     }
 
     var cursorRadius = Math.min(containDists[currMinIdx], intersectDists[secondMinIdx]);
+    if (cursorRadius < 0) { cursorRadius = 0; }
 
     svg.select(".cursorCircle")
         .attr("cx",mouse[0])
@@ -385,14 +433,14 @@ function getTargetCapturedByBubbleCursor(mouse,targets) {
 
     if(cursorRadius < containDists[currMinIdx]) {
       svg.select(".cursorMorphCircle")
-          //.attr("cx",targets[currMinIdx][0][0])
-          //.attr("cy",targets[currMinIdx][0][1])
-          .attr("r",targets[currMinIdx][1]+5);
+          .attr("cx",targets[currMinIdx][0])
+          .attr("cy",targets[currMinIdx][1]);
+          //.attr("r",targets[currMinIdx][1]+5);
     } else {
-      //svg.select(".cursorMorphCircle")
-          //.attr("cx",0)
-          //.attr("cy",0)
-          //.attr("r",0);
+      svg.select(".cursorMorphCircle")
+          .attr("cx",0)
+          .attr("cy",0)
+          .attr("r",0);
     }
 
     return currMinIdx;

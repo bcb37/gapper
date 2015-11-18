@@ -10,6 +10,22 @@
   height: 506px;
 }
 
+div#top {
+   disply: inline-block !important;
+}
+div#country_data {
+   display: inline-block !important;
+}
+
+#heading {
+   display: inline-block;
+   width: 40%;
+}
+
+#country_name {
+   align: center;
+   color: white;
+}
 
 text {
   font: 10px sans-serif;
@@ -48,8 +64,14 @@ text {
   cursor: ew-resize;
 }
 
+.infobox {
+   fill: #dddddd;
+   stroke-width: 3;
+   stroke: #000000;
+}
+
 .country_label {
-   font: 25px sans-serif;
+   font: 20px sans-serif;
    fill: #aa6644;
 }
 
@@ -77,18 +99,29 @@ path.cell {
 
 </style>
 
+<div id="top">
+<div id="heading">
 <h1>The Wealth & Health of Nations</h1>
-
-    <div id="voronoi_checkbox">
-      <input type="checkbox" id="target_acquisition_method"> <label for="TargetAcquisition">Show Voronoi Tessellation</label>
-    </div>
     <div>
     Select Target Acquisition Method
-    <select id="target_acquisition_selector">
-       <option value="voronoi">Voronoi Tesselation</option>
-       <option value="BubbleCursor">Bubble Cursor</option>
-    </select>
+       <input type="radio" name="tas" id="target_acquisition_selector" value="voronoi" checked>Voronoi Tesselation</input>
+       <input type="radio" name="tas" id="target_acquisition_selector" value="bubbleCursor">Bubble Cursor</input>
     </div>
+
+    <div id="voronoi_checkbox">
+      <input type="checkbox" id="target_acquisition_method"> <label for="TargetAcquisition">Show Voronoi Cells</label>
+    </div>
+    <div id="bubbleCursor_checkbox" class="hidden">
+      <input type="checkbox" id="target_acquisition_method"> <label for="TargetAcquisition">Show Curosr Bubbles</label>
+    </div>
+</div>
+<div id="country_data">
+<span id="country_name"></span><br>
+<span id="pci"></span><br>
+<span id="population"></span><br>
+<span id="life_expectancy"></span>
+</div>
+</div>
 <p id="chart"></p>
 
 <aside>Mouseover the year to move forward and backwards through time.</aside>
@@ -97,6 +130,7 @@ path.cell {
 
 
 <script src="http://d3js.org/d3.v3.min.js"></script>
+<script src="//cdnjs.cloudflare.com/ajax/libs/numeral.js/1.4.5/numeral.min.js"></script>
 <script src="gapmind.js">
 </script>
 <script>
