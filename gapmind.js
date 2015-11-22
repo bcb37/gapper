@@ -57,6 +57,27 @@ svg.append("rect")
     .attr("height", height + margin.top + margin.bottom)
     .attr("fill","white");
 
+
+// Add in the cursor circle at 0,0 with 0 radius
+  // We add it first so that it appears behind the targets
+  svg.append("circle")
+    .attr("id","cursorCircle")
+    .attr("class","hidden")
+    .attr("cx",0)
+    .attr("cy",0)
+    .attr("r",0)
+    .attr("fill","lightgray");
+
+  // Add in cursorMorph circle  at 0,0 with 0 radius
+  // We add it first so that it appears behind the targets
+  svg.append("circle")
+    .attr("id","cursorMorphCircle")
+    .attr("class","hidden")
+    .attr("cx",0)
+    .attr("cy",0)
+    .attr("r",0)
+    .attr("fill","lightgray");
+
 // Add the x-axis.
 svg.append("g")
     .attr("class", "x axis")
@@ -95,25 +116,6 @@ var label = svg.append("text")
     .attr("y", height - 24)
     .attr("x", width)
     .text(1800);
-
-// Add in the cursor circle at 0,0 with 0 radius
-  // We add it first so that it appears behind the targets
-  svg.append("circle")
-    .attr("class","cursorCircle")
-    .attr("cx",0)
-    .attr("cy",0)
-    .attr("r",0)
-    .attr("fill","lightgray");
-
-  // Add in cursorMorph circle  at 0,0 with 0 radius
-  // We add it first so that it appears behind the targets
-  svg.append("circle")
-    .attr("class","cursorMorphCircle")
-    .attr("cx",0)
-    .attr("cy",0)
-    .attr("r",0)
-    .attr("fill","lightgray");
-
 var dots = svg.append("svg:g")
     .attr("class", "dots");
 
@@ -125,10 +127,18 @@ cells = svg.append("svg:g")
 var target_acquisition_method = "voronoi";
 
 // From http://mbostock.github.io/d3/talk/20111116/airports.html
-var voronoi_checkbox = d3.select("input[type=checkbox]").on("change", show_acquisition_on_chart);
+var voronoi_checkbox = d3.selectAll("input[type=checkbox]").on("change", show_acquisition_on_chart);
+//var bubbleCursor_checkbox = d3.select("input[type=checkbox]").on("change", show_acquisition_on_chart);
 
 function show_acquisition_on_chart() {
       cells.classed("voronoi", this.checked);
+      if (this.checked) {
+         d3.select("#cursorCircle").attr("class", null);
+         d3.select("#cursorMorphCircle").attr("class", null);
+       } else {
+          d3.select("#cursorCircle").attr("class", "hidden");
+          d3.select("#cursorMorphCircle").attr("class", "hidden");
+       }
 }
 
 // Load the data.
@@ -325,9 +335,19 @@ d3.json("nations.json", function(nations) {
           redo_voronoi();
           d3.select("#voronoi_checkbox").attr("class", null);
           d3.select("#bubbleCursor_checkbox").attr("class", "hidden");
+          d3.select("#cursorCircle").attr("class", "hidden");
+          d3.select("#cursorMorphCircle").attr("class", "hidden");
           overlay.remove();
           add_overlay();
+	  // Is there a d3 way to do this?
+          if (document.getElementById("voronoi_checkbox").getElementsByClassName("target_acquisition_method")[0].checked) {
+	      cells.attr("class", "voronoi");
+	  }
       } else {
+          if (document.getElementById("bubbleCursor_checkbox").getElementsByClassName("target_acquisition_method")[0].checked) {
+              d3.select("#cursorCircle").attr("class", null);
+              d3.select("#cursorMorphCircle").attr("class", null);
+	  }
           cells.remove();
           d3.select("#bubbleCursor_checkbox").attr("class", null);
           d3.select("#voronoi_checkbox").attr("class", "hidden");
@@ -339,12 +359,12 @@ d3.json("nations.json", function(nations) {
      if (target_acquisition_method === "bubbleCursor") {
         unhighlight(); 
 
-        svg.select(".cursorCircle")
+        svg.select("#cursorCircle")
 	    	  .attr("cx",0)
 	  	  .attr("cy",0)
 	  	  .attr("r",0);
 
-        svg.select(".cursorMorphCircle")
+        svg.select("#cursorMorphCircle")
 		  .attr("cx",0)
 	  	  .attr("cy",0)
 	  	  .attr("r",0);
@@ -426,18 +446,21 @@ function getTargetCapturedByBubbleCursor(mouse,targets) {
     var cursorRadius = Math.min(containDists[currMinIdx], intersectDists[secondMinIdx]);
     if (cursorRadius < 0) { cursorRadius = 0; }
 
-    svg.select(".cursorCircle")
+    svg.select("#cursorCircle")
         .attr("cx",mouse[0])
         .attr("cy",mouse[1])
         .attr("r",cursorRadius);
 
     if(cursorRadius < containDists[currMinIdx]) {
-      svg.select(".cursorMorphCircle")
-          .attr("cx",targets[currMinIdx][0])
-          .attr("cy",targets[currMinIdx][1]);
-          //.attr("r",targets[currMinIdx][1]+5);
+      currTarget = d3.select(targets[currMinIdx]);
+      var morphRadius =  Number(currTarget.attr('r')) + 5;
+      svg.select("#cursorMorphCircle")
+         .attr("cx", currTarget.attr('cx'))
+         .attr("cy", currTarget.attr('cy'))
+         .attr("r", morphRadius);
+
     } else {
-      svg.select(".cursorMorphCircle")
+      svg.select("#cursorMorphCircle")
           .attr("cx",0)
           .attr("cy",0)
           .attr("r",0);
