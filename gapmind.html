@@ -1,9 +1,21 @@
-
 <!DOCTYPE html>
-<html class="ocks-org do-not-copy">
+<html> 
 <meta charset="utf-8">
 <title>The Wealth & Health of Nations</title>
 <style>
+
+body {
+  background: #fcfcfa;
+  color: #333;
+  font-family: "PT Serif", serif;
+  margin: 1em auto 4em auto;
+  position: relative;
+  width: 960px;
+}
+
+hi, h2, aside {
+   font-family: "PT Sans", sans-serif;
+}
 
 #chart {
   margin-left: -40px;
@@ -18,6 +30,11 @@ div#country_data {
 }
 
 #heading {
+   display: inline-block;
+   width: 100%;
+}
+
+#selection {
    display: inline-block;
    width: 40%;
 }
@@ -100,21 +117,21 @@ path.cell {
 </style>
 
 <div id="top">
-<div id="heading">
-<h1>The Wealth & Health of Nations</h1>
-    <div>
-    Select Target Acquisition Method
-       <input type="radio" name="tas" id="target_acquisition_selector" value="voronoi" checked>Voronoi Tesselation</input>
+  <div id="heading">
+<h2>The Wealth & Health of Nations </h2>
+<p>A modification of Mike Bostock's <a href="http://bost.ocks.org/mike/nations/">d3 re-creation</a> of Gapminder's  <a href="http://gapminder.org/world/">Wealth & Health of Nations</a> that adds a couple of target acquisition methods.</p>
+  </div> 
+  <div id="selection">
+       <input type="radio" name="tas" id="target_acquisition_selector" value="voronoi" checked>Voronoi Tesselation </input><br>
        <input type="radio" name="tas" id="target_acquisition_selector" value="bubbleCursor">Bubble Cursor</input>
-    </div>
 
     <div id="voronoi_checkbox">
       <input type="checkbox" class="target_acquisition_method"> <label for="TargetAcquisition">Show Voronoi Cells</label>
     </div>
     <div id="bubbleCursor_checkbox" class="hidden">
-      <input type="checkbox" class="target_acquisition_method"> <label for="TargetAcquisition">Show Curosr Bubbles</label>
+      <input type="checkbox" class="target_acquisition_method"> <label for="TargetAcquisition">Show Cursor Bubbles</label>
     </div>
-</div>
+   </div>
 <div id="country_data">
 <span id="country_name"></span><br>
 <span id="pci"></span><br>
@@ -126,11 +143,9 @@ path.cell {
 
 <aside>Mouseover the year to move forward and backwards through time.</aside>
 
-<p class="attribution">Source: <a href="https://github.com/RandomEtc/mind-gapper-js">Tom Carden</a>, <a href="http://gapminder.org">Gapminder</a>.
-
-
 <script src="http://d3js.org/d3.v3.min.js"></script>
 <script src="//cdnjs.cloudflare.com/ajax/libs/numeral.js/1.4.5/numeral.min.js"></script>
+<script src="http://d3js.org/topojson.v1.min.js"></script>
 <script src="gapmind.js">
 </script>
 <script>

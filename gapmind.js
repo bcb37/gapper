@@ -24,7 +24,7 @@ var xScale = d3.scale.log().domain([300, 1e5]).range([0, width]),
 
 // The x & y axes.
 var xAxis = d3.svg.axis().orient("bottom").scale(xScale).ticks(12, d3.format(",d")),
-    yAxis = d3.svg.axis().scale(yScale).orient("right");
+    yAxis = d3.svg.axis().scale(yScale).orient("left");
 
 // Create the SVG container and set the origin.
 var svg = d3.select("#chart").append("svg:svg")
@@ -126,9 +126,8 @@ cells = svg.append("svg:g")
 
 var target_acquisition_method = "voronoi";
 
-// From http://mbostock.github.io/d3/talk/20111116/airports.html
+// Modified from http://mbostock.github.io/d3/talk/20111116/airports.html
 var voronoi_checkbox = d3.selectAll("input[type=checkbox]").on("change", show_acquisition_on_chart);
-//var bubbleCursor_checkbox = d3.select("input[type=checkbox]").on("change", show_acquisition_on_chart);
 
 function show_acquisition_on_chart() {
       cells.classed("voronoi", this.checked);
@@ -347,6 +346,9 @@ d3.json("nations.json", function(nations) {
           if (document.getElementById("bubbleCursor_checkbox").getElementsByClassName("target_acquisition_method")[0].checked) {
               d3.select("#cursorCircle").attr("class", null);
               d3.select("#cursorMorphCircle").attr("class", null);
+	  } else {
+              d3.select("#cursorCircle").attr("class", "hidden");
+              d3.select("#cursorMorphCircle").attr("class", "hidden");
 	  }
           cells.remove();
           d3.select("#bubbleCursor_checkbox").attr("class", null);
@@ -389,7 +391,6 @@ function create_info_text(node){
 
 function highlight(node) {
      // Dim all but the captured target
-     //console.log('highlight',node);
      svg.selectAll(".dot") .attr("opacity",.4);
      svg.selectAll(".dot") .attr("filter",null);
      d3.select(node) .attr('filter', "url(#glow)");
@@ -397,7 +398,6 @@ function highlight(node) {
 }
 
 function unhighlight() {
-    //console.log('unhighlight');
      svg.selectAll(".dot") .attr("opacity",1);
      svg.selectAll(".dot") .attr("filter",null);
 }
