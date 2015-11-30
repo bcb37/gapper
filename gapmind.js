@@ -2,7 +2,7 @@
 function x(d) { return d.income; }
 function y(d) { return d.lifeExpectancy; }
 function radius(d) { return d.population; }
-function color(d) { return d.region; }
+function color(d) { return class_name(d.region); }
 function key(d) { return d.name; }
 
 // Distance funciton from the Bubble Cursor example: http://bl.ocks.org/magrawala/9716298
@@ -387,19 +387,24 @@ function create_info_text(node){
     pci_elem.text(" Income Per Capita: " + numeral(Number(country.attr('income'))).format('$0,0.00'));
     population_elem.text(" Population: " + numeral(Number(country.attr('population'))).format('0,0'));
     life_expectancy_elem.text(" Life Expectancy: " + numeral(Number(country.attr('lifeExpectancy'))).format('0,0.00'));
+    //highlight_map(country.attr('region'));
 }
 
 function highlight(node) {
      // Dim all but the captured target
      svg.selectAll(".dot") .attr("opacity",.4);
+     map_svg.selectAll(".map_country") .attr("opacity",.4);
      svg.selectAll(".dot") .attr("filter",null);
      d3.select(node) .attr('filter', "url(#glow)");
+     this_region = d3.select(node).attr('region');
+     d3.selectAll("."+class_name(this_region)) .attr("opacity", 1);
      d3.select(node) .attr('opacity', 2);
 }
 
 function unhighlight() {
      svg.selectAll(".dot") .attr("opacity",1);
      svg.selectAll(".dot") .attr("filter",null);
+     map_svg.selectAll(".map_country") .attr("opacity",1);
 }
 
 function make_polygons() {
@@ -468,3 +473,53 @@ function getTargetCapturedByBubbleCursor(mouse,targets) {
 
     return currMinIdx;
 }
+
+function region_name(d) { 
+   if (d.properties.region.indexOf("America") !=-1)  {
+      return "America";
+   } else {
+      return class_name(d.properties.region);
+   }
+}
+
+function class_name(region) {
+   return region.replace(/[\s\W]/g,'');
+}
+
+function div_text(region) { 
+    //document.getElementById("region").innerHTML = region;
+}
+
+
+var map_width = 260,
+    map_height = 150;
+
+var map_svg = d3.select("#map").append("svg")
+    .attr("width", map_width)
+    .attr("id", "regions_map")
+    .attr("height", map_height);
+
+d3.json("world_map.json", function(error, world) {
+  console.log(world);
+
+var map_projection = d3.geo.kavrayskiy7()
+    .scale(50)
+    .translate([map_width / 2, map_height / 2]);
+
+var map_path = d3.geo.path()
+      .projection(map_projection);
+
+  if (error) return console.error(error);
+
+map_svg.selectAll(".country")
+      .data(topojson.feature(world, world.objects.world_geo).features)
+    .enter().append("path")
+    .style("fill", function(d) { return colorScale(region_name(d)); })
+    .attr("d", map_path)
+    //.attr("class", "map_country")
+    .attr("class", function(d) {return "map_country " + region_name(d)})
+    .on('mouseover', function(d,i) {
+          div_text(d.properties.region);
+     })
+});
+
