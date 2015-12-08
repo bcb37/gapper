@@ -27,6 +27,7 @@ div#top {
 }
 div#country_data {
    display: inline-block !important;
+   width: 250px;
 }
 
 div#map {
@@ -117,13 +118,17 @@ path.cell {
   opacity: 0.7 !important;
 }
 
+input[type="checkbox"] {
+  margin: 10px 0 0 10px;
+}
+
 
 </style>
 
 <div id="top">
   <div id="heading">
 <h2>The Wealth & Health of Nations </h2>
-<p>A modification of Mike Bostock's <a href="http://bost.ocks.org/mike/nations/">d3 re-creation</a> of Gapminder's  <a href="http://gapminder.org/world/">Wealth & Health of Nations</a> that adds a couple of target acquisition methods.</p>
+<p>A modification of Mike Bostock's <a href="http://bost.ocks.org/mike/nations/">d3 re-creation</a> of Gapminder's  <a href="http://gapminder.org/world/">Wealth & Health of Nations</a> that adds a couple of target acquisition methods, highlighting of selected elements and regions on a map.</p>
   </div> 
   <div id="selection">
        <input type="radio" name="tas" id="target_acquisition_selector" value="voronoi" checked>Voronoi Tesselation </input><br>
